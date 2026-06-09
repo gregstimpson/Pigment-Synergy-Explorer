@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pigment Platform Synergy Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;background:#faf6ee;color:#3d3428;font-size:13px}
+:root{
+  --body:#3d3428;--dark:#1a1714;--label:#6b5d4e;
+  --blue:#2e74b5;--link:#1155cc;--gold:#c8a86e;
+  --green:#274e13;--green-mid:#3b6d11;--amber:#b45f06;
+  --white:#fff;--cream:#faf6ee;--cream-kpi:#f5edd8;--border:#e8dfc8;
+}
+
+/* HEADER */
+.hdr{background:var(--white);border-bottom:2px solid var(--gold);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.hdr-left{display:flex;align-items:center;gap:12px}
+.logo{width:32px;height:32px;background:var(--link);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo svg{width:18px;height:18px;fill:white}
+.hdr-title{font-size:16px;font-weight:600;color:var(--dark);letter-spacing:-.01em}
+.hdr-sub{font-size:11px;color:var(--label);margin-top:2px}
+.hdr-tag{font-size:10px;font-weight:600;color:var(--label);background:var(--cream-kpi);padding:5px 12px;border-radius:10px;border:1px solid var(--border)}
+
+/* INTRO */
+.intro{padding:28px 32px 0;max-width:960px}
+.intro h2{font-size:20px;font-weight:600;color:var(--dark);margin-bottom:8px}
+.intro p{font-size:13px;color:var(--label);line-height:1.75;max-width:720px}
+
+/* MAGNITUDE */
+.magnitude-section{padding:20px 32px 0}
+.mag-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px 22px}
+.mag-card-title{font-size:10px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.mag-card-sub{font-size:11px;color:var(--label);margin-bottom:16px}
+.mag-bars-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.mag-bar-col{display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer}
+.mag-bar-col:hover .mag-bar-fill{filter:brightness(1.12)}
+.mag-bar-track{width:36px;height:72px;background:var(--cream);border-radius:5px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.mag-bar-fill{width:100%;border-radius:5px;transition:height .5s cubic-bezier(.4,0,.2,1)}
+.mag-bar-name{font-size:10px;font-weight:600;color:var(--label);text-align:center;line-height:1.35}
+.mag-bar-val{font-size:10px;font-weight:700;text-align:center}
+
+/* GRID */
+.grid-section{padding:20px 32px 0}
+.grid-label{font-size:10px;font-weight:600;color:var(--label);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.pairing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+
+.pairing-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.pairing-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px}
+.pairing-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.pairing-card.active{box-shadow:0 8px 28px rgba(0,0,0,.11)}
+.card-uc-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.uc-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;letter-spacing:.04em}
+.card-plus{font-size:13px;color:var(--label);font-weight:300}
+.card-title{font-size:13px;font-weight:600;color:var(--dark);margin-bottom:5px}
+.card-teaser{font-size:11px;color:var(--label);line-height:1.55}
+.card-arrow{position:absolute;right:15px;top:15px;font-size:16px;color:var(--border);transition:color .15s}
+.pairing-card.active .card-arrow{color:var(--gold)}
+.card-meta{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.card-driver-count{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:var(--label);background:var(--cream);padding:3px 9px;border-radius:8px}
+.card-mag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:8px}
+
+.c-fpa-spm::before{background:#3b6d11}.c-fpa-spm.active{background:#f4f9ef;border-color:#3b6d11}
+.c-fpa-spm .uc-badge.a{background:#eaf3de;color:#27500a}.c-fpa-spm .uc-badge.b{background:#faece7;color:#4a1b0c}
+.c-fpa-scm::before{background:#0f6e56}.c-fpa-scm.active{background:#f0faf6;border-color:#0f6e56}
+.c-fpa-scm .uc-badge.a{background:#eaf3de;color:#27500a}.c-fpa-scm .uc-badge.b{background:#e1f5ee;color:#04342c}
+.c-fpa-consol::before{background:#534ab7}.c-fpa-consol.active{background:#f5f4ff;border-color:#534ab7}
+.c-fpa-consol .uc-badge.a{background:#eaf3de;color:#27500a}.c-fpa-consol .uc-badge.b{background:#eeedfe;color:#26215c}
+.c-spm-scm::before{background:#993c1d}.c-spm-scm.active{background:#fef6f3;border-color:#993c1d}
+.c-spm-scm .uc-badge.a{background:#faece7;color:#4a1b0c}.c-spm-scm .uc-badge.b{background:#e1f5ee;color:#04342c}
+.c-spm-consol::before{background:#185fa5}.c-spm-consol.active{background:#f0f6fd;border-color:#185fa5}
+.c-spm-consol .uc-badge.a{background:#faece7;color:#4a1b0c}.c-spm-consol .uc-badge.b{background:#eeedfe;color:#26215c}
+.c-scm-consol::before{background:#854f0b}.c-scm-consol.active{background:#fdf7ee;border-color:#854f0b}
+.c-scm-consol .uc-badge.a{background:#e1f5ee;color:#04342c}.c-scm-consol .uc-badge.b{background:#eeedfe;color:#26215c}
+
+/* DETAIL PANEL */
+.detail-section{padding:16px 32px 0}
+.detail-panel{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;animation:slideIn .2s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.detail-header{padding:20px 24px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:18px;border-left:4px solid transparent}
+.detail-header-left{flex:1}
+.detail-pairing-badges{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.detail-badge{font-size:12px;font-weight:700;padding:4px 11px;border-radius:7px}
+.detail-plus{font-size:15px;color:var(--label)}
+.detail-title{font-size:18px;font-weight:600;color:var(--dark);margin-bottom:9px}
+.detail-narrative{font-size:12px;color:var(--label);line-height:1.8;max-width:680px;font-style:italic}
+.detail-close{background:none;border:none;cursor:pointer;font-size:22px;color:var(--label);padding:0;line-height:1;flex-shrink:0;margin-top:2px;transition:color .15s}
+.detail-close:hover{color:var(--dark)}
+
+.context-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--cream)}
+.ctx-item{flex:1;padding:11px 18px;border-right:1px solid var(--border)}
+.ctx-item:last-child{border-right:none}
+.ctx-key{font-size:9px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.ctx-val{font-size:11px;font-weight:500;color:var(--dark);line-height:1.45}
+
+.tab-nav{display:flex;border-bottom:1px solid var(--border);background:var(--white)}
+.tab{padding:11px 20px;font-size:12px;font-weight:500;color:var(--label);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;user-select:none}
+.tab.active{color:var(--dark);border-bottom-color:var(--gold);font-weight:600}
+.tab:hover:not(.active){color:var(--dark);background:var(--cream)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* DRIVER TILES */
+.drivers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.driver-tile{padding:18px 20px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.driver-tile:nth-child(3n){border-right:none}
+.driver-tile:nth-last-child(-n+3){border-bottom:none}
+.driver-num{font-size:10px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.driver-name{font-size:13px;font-weight:600;color:var(--dark);margin-bottom:7px;line-height:1.4}
+.badge-row{margin-bottom:8px}
+.driver-badge{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:6px;letter-spacing:.04em}
+.driver-formula{background:var(--cream);border-radius:7px;padding:9px 11px;margin-bottom:9px;font-size:10px;color:#6b5d4e;line-height:1.7;border-left:3px solid var(--gold)}
+.driver-detail{font-size:11px;color:var(--label);line-height:1.65;margin-bottom:8px}
+.driver-source{font-size:10px;color:var(--label);font-style:italic}
+.driver-source strong{font-style:normal;font-weight:600}
+.narrative-note{padding:14px 20px;background:#faeeda;border-top:1px solid var(--border);font-size:11px;color:#854f0b;line-height:1.65}
+.narrative-note strong{font-weight:700}
+
+/* DISCOVERY TAB */
+.discovery-wrap{padding:18px 22px 22px;display:flex;flex-direction:column;gap:11px}
+.disc-intro{font-size:12px;color:var(--label);line-height:1.65;margin-bottom:4px;font-style:italic}
+.disc-item{display:flex;gap:13px;padding:13px 16px;background:var(--cream);border-radius:9px;border-left:3px solid var(--gold)}
+.disc-num{font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0;min-width:18px;padding-top:1px}
+.disc-q{font-size:12px;font-weight:600;color:var(--dark);margin-bottom:4px;line-height:1.45}
+.disc-why{font-size:11px;color:var(--label);line-height:1.55}
+.disc-input-tag{display:inline-block;font-size:9px;font-weight:700;padding:1px 7px;border-radius:5px;margin-left:6px;background:#e8f0fb;color:var(--link);vertical-align:middle}
+
+/* CONTEXT TAB */
+.context-wrap{padding:18px 22px 22px;display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.ctx-block{background:var(--cream);border-radius:9px;padding:14px 16px;border-left:3px solid var(--border)}
+.ctx-block.highlight{border-left-color:var(--gold);background:var(--cream-kpi)}
+.ctx-block-title{font-size:10px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.ctx-block ul{padding-left:15px;display:flex;flex-direction:column;gap:6px}
+.ctx-block ul li{font-size:11px;color:var(--body);line-height:1.55}
+.ctx-block ul li strong{color:var(--dark);font-weight:600}
+.ctx-block p{font-size:11px;color:var(--body);line-height:1.55}
+
+/* CTA STRIP */
+.cta-strip{padding:15px 22px;background:var(--cream-kpi);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.cta-strip-text{font-size:11px;color:var(--label);line-height:1.55;flex:1;min-width:220px}
+.cta-strip-text strong{color:var(--dark);font-weight:600}
+.cta-btn{padding:10px 20px;border-radius:8px;border:none;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;background:var(--green);color:white}
+.cta-btn:hover{background:var(--green-mid)}
+
+.footnote{padding:14px 32px 28px;font-size:10px;color:var(--label);font-style:italic;line-height:1.7}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="logo">
+      <svg viewBox="0 0 16 16"><path d="M3 2h4a4 4 0 010 8H3V2zm2 2v4h2a2 2 0 000-4H5z"/><rect x="3" y="11" width="2" height="3"/></svg>
+    </div>
+    <div>
+      <div class="hdr-title">Pigment Platform Synergy</div>
+      <div class="hdr-sub">Incremental value when use cases share a single planning platform</div>
+    </div>
+  </div>
+  <div class="hdr-tag">6 integration pairings</div>
+</div>
+
+<div class="intro">
+  <h2>Why the platform multiplies value across use cases</h2>
+  <p>Each Pigment use case delivers standalone value. But when two or more modules share a live data model, a second layer of incremental benefit appears that no point solution can replicate. The magnitude chart below indexes all six pairings by synergy potential. Select any pairing to explore the drivers, benchmark model logic, discovery questions, and deal context.</p>
+</div>
+
+<div class="magnitude-section">
+  <div class="mag-card">
+    <div class="mag-card-title">Relative Synergy Magnitude</div>
+    <div class="mag-card-sub">Indexed to a $1B revenue / 5,000 headcount / 65% gross margin company. Click any bar to open that pairing.</div>
+    <div class="mag-bars-row" id="magBarsRow"></div>
+  </div>
+</div>
+
+<div class="grid-section">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <div class="grid-label" style="margin-bottom:0">Select one or more pairings to explore</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="selectionCount" style="font-size:11px;color:var(--label);display:none"></span>
+      <button id="clearBtn" onclick="clearAll()" style="display:none;font-size:11px;font-weight:600;color:var(--amber);background:none;border:1px solid var(--border);border-radius:7px;padding:4px 12px;cursor:pointer;font-family:inherit">Clear all</button>
+    </div>
+  </div>
+  <div class="pairing-grid">
+
+    <div class="pairing-card c-fpa-spm" onclick="openPanel('fpa-spm')">
+      <span class="card-arrow">›</span>
+      <div class="card-uc-row"><span class="uc-badge a">FP&amp;A</span><span class="card-plus">+</span><span class="uc-badge b">SPM</span></div>
+      <div class="card-title">Finance meets Sales</div>
+      <div class="card-teaser">AOP becomes a live constraint that territory models and quota assignments are continuously tested against.</div>
+      <div class="card-meta">
+        <span class="card-driver-count">⚡ 3 synergy drivers</span>
+        <span class="card-mag" style="background:#eaf3de;color:#27500a" id="mag-fpa-spm"></span>
+      </div>
+    </div>
+
+    <div class="pairing-card c-fpa-scm" onclick="openPanel('fpa-scm')">
+      <span class="card-arrow">›</span>
+      <div class="card-uc-row"><span class="uc-badge a">FP&amp;A</span><span class="card-plus">+</span><span class="uc-badge b">SCM</span></div>
+      <div class="card-title">Finance meets Supply Chain</div>
+      <div class="card-teaser">Procurement decisions made with full cash flow visibility. Supply disruptions surface before they hit the P&amp;L.</div>
+      <div class="card-meta">
+        <span class="card-driver-count">⚡ 3 synergy drivers</span>
+        <span class="card-mag" style="background:#e1f5ee;color:#0f6e56" id="mag-fpa-scm"></span>
+      </div>
+    </div>
+
+    <div class="pairing-card c-fpa-consol" onclick="openPanel('fpa-consol')">
+      <span class="card-arrow">›</span>
+      <div class="card-uc-row"><span class="uc-badge a">FP&amp;A</span><span class="card-plus">+</span><span class="uc-badge b">Consolidations</span></div>
+      <div class="card-title">Finance meets Close</div>
+      <div class="card-teaser">The data handoff between close and forecast disappears. Consolidated actuals feed the plan with no integration lag.</div>
+      <div class="card-meta">
+        <span class="card-driver-count">⚡ 3 drivers + M&amp;A upside</span>
+        <span class="card-mag" style="background:#eeedfe;color:#534ab7" id="mag-fpa-consol"></span>
+      </div>
+    </div>
+
+    <div class="pairing-card c-spm-scm" onclick="openPanel('spm-scm')">
+      <span class="card-arrow">›</span>
+      <div class="card-uc-row"><span class="uc-badge a">SPM</span><span class="card-plus">+</span><span class="uc-badge b">SCM</span></div>
+      <div class="card-title">Sales meets Supply Chain</div>
+      <div class="card-teaser">Sales reps stop committing to products that cannot ship. Supply planners stop buffering against a plan they do not trust.</div>
+      <div class="card-meta">
+        <span class="card-driver-count">⚡ 2 quantified + 1 narrative</span>
+        <span class="card-mag" style="background:#faece7;color:#993c1d" id="mag-spm-scm"></span>
+      </div>
+    </div>
+
+    <div class="pairing-card c-spm-consol" onclick="openPanel('spm-consol')">
+      <span class="card-arrow">›</span>
+      <div class="card-uc-row"><span class="uc-badge a">SPM</span><span class="card-plus">+</span><span class="uc-badge b">Consolidations</span></div>
+      <div class="card-title">Sales meets Close</div>
+      <div class="card-teaser">Commission accruals flow directly into the consolidated P&amp;L. Quota attainment by entity is visible in the statutory model in real time.</div>
+      <div class="card-meta">
+        <span class="card-driver-count">⚡ 3 synergy drivers</span>
+        <span class="card-mag" style="background:#e6f1fb;color:#185fa5" id="mag-spm-consol"></span>
+      </div>
+    </div>
+
+    <div class="pairing-card c-scm-consol" onclick="openPanel('scm-consol')">
+      <span class="card-arrow">›</span>
+      <div class="card-uc-row"><span class="uc-badge a">SCM</span><span class="card-plus">+</span><span class="uc-badge b">Consolidations</span></div>
+      <div class="card-title">Supply Chain meets Close</div>
+      <div class="card-teaser">Inventory positions and intercompany movements are available to the close team in real time, eliminating reconciliation lag.</div>
+      <div class="card-meta">
+        <span class="card-driver-count">⚡ 3 synergy drivers</span>
+        <span class="card-mag" style="background:#faeeda;color:#854f0b" id="mag-scm-consol"></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="detail-section" id="detailWrap" style="display:none"></div>
+
+<div class="footnote" id="footnote" style="display:none">
+  All synergy drivers are ESTIMATED — derived from Gartner, Forrester, McKinsey, APQC, Deloitte, PwC, Aberdeen Group, IBF, EY, and HBR benchmarks. All drivers are incremental to standalone use case value and do not double-count any driver already in the core use case model. Relative magnitude scores are indexed to a $1B revenue, 5,000-person company at 65% gross margin. Enter a company name in Claude to model dollar values against actual prospect financials.
+</div>
+
+<script>
+const DATA = {
+  'fpa-spm': {
+    title:'FP&A + SPM', accent:'#3b6d11',
+    colorA:'#27500a', bgA:'#eaf3de', labelA:'FP&A',
+    colorB:'#4a1b0c', bgB:'#faece7', labelB:'SPM',
+    magnitude:72, magLabel:'High',
+    context:{
+      ideal:'High-growth SaaS or recurring-revenue business with a large, segmented GTM motion and quarterly planning cycles. Most valuable when the sales planning team and FP&A team use separate tools today.',
+      primaryBuyer:'VP FP&A + VP Revenue Operations, co-sponsored',
+      typicalDeal:'FP&A + SPM is the most common two-module entry point. Often preceded by a standalone SPM win.',
+      competitiveAngle:'Displaces Anaplan (FP&A) + Salesforce/Varicent (ICM) or Xactly pairing. Pigment unifies both on one data model.',
+      whenItShines:[
+        'Quota planning process is manual and takes 3+ weeks each cycle',
+        'Finance and Revenue Operations produce separate revenue forecasts that rarely agree',
+        'Commission accruals require a manual export from the ICM tool into FP&A',
+        'AOP is rebuilt from scratch each year rather than rolled forward from actuals'
+      ]
+    },
+    narrative:'When Finance and Sales plan on the same platform, the Annual Operating Plan stops being a static target handed down once a year. It becomes a live constraint that territory models, quota assignments, and pipeline forecasts are continuously tested against. The result is a financial statement forecast that reflects what Sales is actually going to do — not what Finance assumed six months ago.',
+    drivers:[
+      {num:'S1',name:'Forecast Cycle Compression',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Finance FTEs × (3 days × 4 forecast cycles) × $520/day × 60% attribution × 85% risk adj × 50% Y1 ramp',
+       detail:'Disconnected Finance and Sales systems require 3 to 5 additional days per forecast cycle for manual reconciliation. A shared platform eliminates this lag structurally — not through process change but because both teams are on the same data.',
+       source:'Gartner Revenue Operations benchmark; Forrester TEI'},
+      {num:'S2',name:'Pipeline-to-Plan Accuracy',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Revenue × 0.1% incremental variance reduction × Gross Margin × 10% realization × 50% Y1 ramp',
+       detail:'Revenue forecast variance narrows by an additional 1 percentage point when pipeline and financials share a live data model. Benchmarked as incremental to the standalone SPM and FP&A forecast accuracy drivers.',
+       source:'HBR; Aberdeen Group'},
+      {num:'S3',name:'Compensation Accrual Accuracy',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'GTM headcount × $150K OTE × 40% comp ratio × 0.5% accrual error rate × 50% Y1 ramp',
+       detail:'Manual commission data flowing into FP&A creates accrual errors averaging 0.5% of the total comp budget per period. A shared platform eliminates the extract-and-load cycle that introduces these errors.',
+       source:'Deloitte CFO Insights; Gartner'}
+    ],
+    discovery:[
+      {q:'How many days does the forecast cycle take from data pull to Finance sign-off, and how much of that is spent waiting on Sales inputs?',why:'Validates the 3-day reconciliation anchor. If the answer is 5+ days the model is conservative.',tag:'KEY INPUT'},
+      {q:'Do Finance and Revenue Operations produce separate revenue forecasts today, and how often do they disagree at month-end?',why:'Qualifies the pipeline-to-plan accuracy driver. Disagreement implies a live reconciliation cost.'},
+      {q:'How does your commission accrual process work today — is it automated or does someone export from the ICM tool into FP&A?',why:'Directly validates the comp accrual accuracy driver. Manual export confirms synergy value.',tag:'KEY INPUT'},
+      {q:'When quota planning kicks off each cycle, does it start from the AOP or is it rebuilt independently by RevOps?',why:'Signals whether the AOP-as-live-constraint narrative resonates. Rebuilt independently signals clear pain.'},
+      {q:'Who owns the reconciliation when Finance and Sales forecasts diverge, and how long does that conversation typically take?',why:'Surfaces the hidden organizational cost of disconnected planning. Useful for executive-level framing.'}
+    ]
+  },
+  'fpa-scm': {
+    title:'FP&A + SCM', accent:'#0f6e56',
+    colorA:'#27500a', bgA:'#eaf3de', labelA:'FP&A',
+    colorB:'#04342c', bgB:'#e1f5ee', labelB:'SCM',
+    magnitude:68, magLabel:'High',
+    context:{
+      ideal:'Manufacturer, retailer, or distributor with meaningful inventory positions and logistics spend. Most valuable when demand planning and financial forecasting run on separate systems and supply disruptions create P&L surprises.',
+      primaryBuyer:'CFO + VP Supply Chain, co-sponsored. Finance typically initiates.',
+      typicalDeal:'Less common as an entry point than FP&A alone. Usually follows a standing FP&A relationship where supply chain pain is surfaced during discovery.',
+      competitiveAngle:'Displaces Oracle EPM (FP&A) + Blue Yonder or Kinaxis (SCM). No competitor unifies both planning motions on a single data model.',
+      whenItShines:[
+        'Supply disruptions show up as P&L surprises because Finance had no advance signal',
+        'Demand planning team and Finance team use different revenue forecast numbers',
+        'Scenario planning for supply shocks takes weeks because the two models are separate',
+        'Working capital forecasts are routinely off because inventory buffers are not visible to Finance'
+      ]
+    },
+    narrative:'A supply chain disruption does not become a finance problem on the day it hits the P&L. It becomes one the moment a procurement decision is made without visibility into the cash flow model. Pigment gives Finance and Supply Chain a shared planning surface so demand signals flow directly into financial forecasts and cash flow constraints are visible to procurement planners before commitments are made.',
+    drivers:[
+      {num:'S1',name:'Demand Signal Accuracy',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Revenue × 0.5% incremental impact × 50% platform attribution × 85% risk adj × 50% Y1 ramp',
+       detail:'Supply chains planning against a shared financial forecast reduce forecast error (MAPE) by 10 to 15 percentage points. Anchored at 0.5% incremental revenue impact, net of the standalone SCM stock-out driver to avoid double-counting.',
+       source:'Gartner Supply Chain TOP 25; IBF benchmark'},
+      {num:'S2',name:'Working Capital Accuracy',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Inventory Value × 3% buffer reduction × 8% cost of capital × 50% Y1 ramp',
+       detail:'Companies with disconnected supply chain and financial planning carry 5 to 10% excess inventory buffer as a hedge against forecast uncertainty. A unified platform reduces that buffer by 3%, releasing working capital and reducing carrying costs simultaneously.',
+       source:'McKinsey Working Capital Benchmark; APQC'},
+      {num:'S3',name:'Scenario Planning Cycle Time',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'(Finance FTEs + SCM FTEs) × 20 analyst-days per scenario × $520/day × 60% × 85% risk adj × 50% Y1 ramp',
+       detail:'Two major disruption scenarios per year each require approximately 10 days of combined Finance and Supply Chain analyst time in disconnected systems. A shared platform collapses this because the scenario model is already built on live data.',
+       source:'Forrester TEI; Pigment customer interviews'}
+    ],
+    discovery:[
+      {q:'When a supply disruption happens, how long does it take for the financial impact to show up in the FP&A model?',why:'Directly validates the demand signal accuracy driver. Days above zero is quantifiable synergy value.',tag:'KEY INPUT'},
+      {q:'Do your demand planners and Finance team use the same revenue forecast as their planning baseline, or do they each maintain their own?',why:'If separate, the working capital and scenario drivers are both live. The single most diagnostic question for this pairing.'},
+      {q:'How much of your inventory position would you describe as a buffer against forecast uncertainty rather than operational need?',why:'Validates the working capital accuracy driver. High buffer equals high synergy value on S2.',tag:'KEY INPUT'},
+      {q:'When a major supply scenario needs to be modeled, how long does that analysis take and who does it?',why:'Validates the scenario planning cycle time driver. Manual process confirms high value on S3.'},
+      {q:'Has Finance ever been surprised by a supply-driven P&L miss that Supply Chain saw coming but could not surface in time?',why:'Establishes the cost-of-inaction narrative at CFO level. Qualitative but highly effective in discovery.'}
+    ]
+  },
+  'fpa-consol': {
+    title:'FP&A + Consolidations', accent:'#534ab7',
+    colorA:'#27500a', bgA:'#eaf3de', labelA:'FP&A',
+    colorB:'#26215c', bgB:'#eeedfe', labelB:'Consolidations',
+    magnitude:88, magLabel:'Very High',
+    context:{
+      ideal:'Multi-entity company managing both statutory consolidation and forward-looking financial planning. Maximum value when the close team and FP&A team are separate groups using different systems. Common in PE-backed businesses, post-M&A organizations, and multinationals.',
+      primaryBuyer:'CFO-level sponsorship required. Controller or CAO owns Consolidations; VP FP&A owns planning. Both must be aligned.',
+      typicalDeal:'Highest-value two-module pairing. Often the path to full platform displacement of Oracle HFM + Hyperion or SAP BPC + BFC.',
+      competitiveAngle:'The only platform that unifies statutory close and management planning in a single data model. All incumbents (HFM, Hyperion, SAP BPC/BFC, Tagetik) treat them as separate applications.',
+      whenItShines:[
+        'Planning team waits 3+ days after close to receive the actuals baseline',
+        'Statutory and management reporting use different charts of accounts',
+        'Reforecast cycles are delayed because actuals validation is still in progress',
+        'Active M&A program creates recurring integration overhead for both close and planning teams'
+      ]
+    },
+    narrative:'Most finance organizations treat the close and the forecast as sequential activities separated by a data handoff. That handoff is where time, accuracy, and organizational energy are lost. A unified platform eliminates it structurally. The close feeds the plan directly, the chart of accounts is shared, and scenario models run against real consolidated actuals — not approximations extracted from a separate EPM system.',
+    drivers:[
+      {num:'S1',name:'Actuals Integration Lag Elimination',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Finance FTEs × 4 days × 12 periods × $520/day × 80% FTE attribution × 85% risk adj × 50% Y1 ramp',
+       detail:'3 to 7 business days per period are consumed extracting and reconciling actuals between close and planning systems. This cost disappears when the architecture changes — not through process improvement. Anchored at 4 days as a conservative midpoint.',
+       source:'Deloitte Finance Effectiveness Benchmark; PwC 2023'},
+      {num:'S2',name:'Chart of Accounts Reconciliation',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Finance FTEs × 30% close allocation × 20 hrs/period × 12 periods × $62.50/hr × 70% attribution × 85% risk adj × 50% Y1 ramp',
+       detail:'15 to 25 hours per period are spent reconciling statutory vs management reporting taxonomies when consolidation and planning run on separate charts of accounts. A unified platform eliminates this entirely.',
+       source:'Gartner EPM research; EY CFO Insights'},
+      {num:'S3',name:'Reforecast Cycle Compression',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Finance FTEs × 2 days × 4 reforecast cycles × $520/day × 60% attribution × 85% risk adj × 50% Y1 ramp',
+       detail:'Each reforecast compresses by 2 days when consolidated actuals are immediately available as the baseline. Modeled separately from FP&A Driver 3 and Consolidations Driver 1 to avoid double-counting.',
+       source:'Forrester TEI; Aberdeen Group'}
+    ],
+    extraNote:'Acquisition Integration Acceleration: 4 months of integration labor avoided per acquisition on a unified platform. Include in hard ROI only when the prospect confirms an active M&A program — otherwise present in the Risk and Cost of Inaction section.',
+    discovery:[
+      {q:'How many days after period-end close does the FP&A team receive the actuals baseline they use to start the reforecast?',why:'Directly sizes the actuals integration lag driver. Every day above zero is quantifiable synergy value.',tag:'KEY INPUT'},
+      {q:'Do your consolidation and planning systems share a chart of accounts, or is there a mapping layer between statutory and management reporting?',why:'A separate mapping layer confirms the chart of accounts reconciliation driver. Usually the most surprising question for Controllers.',tag:'KEY INPUT'},
+      {q:'How many legal entities does your consolidation cover, and how many do you expect to add through acquisition in the next 3 years?',why:'Sizes the reforecast compression driver and unlocks the M&A acceleration narrative if growth is confirmed.'},
+      {q:'Who owns the consolidation platform today — is that team part of FP&A or a separate close and reporting function?',why:'Reveals whether a single champion can sponsor both use cases or whether separate stakeholder alignment is needed.'},
+      {q:'How many days of the reforecast cycle are spent waiting for or validating actuals before the planning team can begin?',why:'Cross-validates the actuals lag question. Useful if the first question gets a vague answer.'},
+      {q:'What is your current annual spend on EPM and consolidation platforms combined — licensing, support, and IT maintenance?',why:'Highest-priority input for the legacy system elimination driver. Validate before building the ROI model.',tag:'KEY INPUT'}
+    ]
+  },
+  'spm-scm': {
+    title:'SPM + SCM', accent:'#993c1d',
+    colorA:'#4a1b0c', bgA:'#faece7', labelA:'SPM',
+    colorB:'#04342c', bgB:'#e1f5ee', labelB:'SCM',
+    magnitude:54, magLabel:'Moderate',
+    context:{
+      ideal:'Product company with a direct sales force and meaningful logistics or inventory operations. Most valuable in industries where individual SKU availability affects seller attainment — hardware, industrial equipment, consumer goods, pharmaceuticals.',
+      primaryBuyer:'VP Revenue Operations + VP Supply Chain. Rarely co-sponsored naturally; seller needs to create the bridge.',
+      typicalDeal:'Unusual as a standalone pairing. More commonly surfaces as an incremental synergy layer when both use cases are already active or under evaluation.',
+      competitiveAngle:'No point solution addresses both. The synergy only exists on a shared platform. This is a pure Pigment differentiator.',
+      whenItShines:[
+        'Sales reps have committed to delivery dates or SKUs that supply could not fulfill in the last 12 months',
+        'Expedited shipping costs are a recurring P&L line that surprises Finance each quarter',
+        'Quota relief conversations have been triggered by supply shortages rather than seller performance',
+        'Supply planners add safety stock buffers specifically because they distrust the sales forecast'
+      ]
+    },
+    narrative:'The most expensive sales and supply chain problem is not a stockout. It is a sales rep who commits to a product that cannot ship, a supply planner who buffers against a plan they do not trust, and a finance team explaining both at the same time. A shared platform removes the structural cause: sales commits are visible to supply planners before they create expediting costs, and supply constraints are visible to sellers before they create quota relief conversations.',
+    drivers:[
+      {num:'S1',name:'Constrained-SKU Revenue Protection',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Revenue × 1% at-risk exposure × 50% reduction × Gross Margin × 10% realization × 50% Y1 ramp',
+       detail:'1% of attainable revenue is lost annually when sales commits on products that cannot be fulfilled. A shared platform reduces that exposure by 50% by giving sellers real-time visibility into supply positions before they commit.',
+       source:'Gartner Sales Operations benchmark; IBF'},
+      {num:'S2',name:'Sales-Surprise Expedited Shipping',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Logistics Spend × 10% expedited rate × 30% sales-triggered portion × 70% reduction × 50% Y1 ramp',
+       detail:'30% of expedited shipping costs are triggered by sales commits made without supply visibility. When both systems share a data model, sellers see supply positions in real time and reactive expediting is largely eliminated.',
+       source:'APQC Logistics Benchmark'},
+      {num:'S3',name:'Commission Plan Stability',badge:'NARRATIVE',badgeColor:'#854f0b',badgeBg:'#faeeda',
+       formula:'GTM headcount × OTE × 40% comp ratio × 2% mid-quarter adjustment cost',
+       detail:'Mid-quarter quota relief driven by supply disruptions costs approximately 2% of the total commission budget when it occurs. Include in hard ROI only when the prospect confirms supply disruptions triggered comp plan changes in the last 12 months.',
+       source:'Deloitte Sales Effectiveness survey; Gartner'}
+    ],
+    discovery:[
+      {q:'In the last 12 months, have any sales reps committed to delivery dates or SKUs that supply could not fulfill?',why:'Qualifies the constrained-SKU driver. A yes unlocks S1. Follow-up: how often, and what was the revenue impact?',tag:'KEY INPUT'},
+      {q:'What percentage of your logistics spend goes to expedited or premium shipping, and do you track what triggers it?',why:'Directly sizes the expedited shipping driver. If not tracked, use 10% of logistics spend as the default.',tag:'KEY INPUT'},
+      {q:'Has supply chain disruption ever triggered a mid-quarter quota relief or territory adjustment for your sales team?',why:'Qualifies Driver S3 for hard ROI inclusion. If yes, the narrative becomes much more powerful with comp budget math.'},
+      {q:'Do your supply planners see the sales forecast when they set inventory buffers, and do they trust it?',why:'Surfaces the demand trust gap. Low trust equals high buffer and confirmed working capital cost.'},
+      {q:'When a top-performing seller loses a deal because product was not available, how is that tracked and who is accountable?',why:'Reveals whether the pain is visible and owned. Useful for executive framing in a joint VP Sales and VP Supply Chain conversation.'}
+    ]
+  },
+  'spm-consol': {
+    title:'SPM + Consolidations', accent:'#185fa5',
+    colorA:'#4a1b0c', bgA:'#faece7', labelA:'SPM',
+    colorB:'#26215c', bgB:'#eeedfe', labelB:'Consolidations',
+    magnitude:60, magLabel:'Moderate-High',
+    context:{
+      ideal:'Multi-entity company with a significant direct sales force where sales compensation expense is material to the statutory P&L. Most valuable when the ICM system and consolidation system require a manual integration or extract-and-load process each period.',
+      primaryBuyer:'Controller or CAO (owns Consolidations) + VP Revenue Operations (owns SPM). CFO is the economic buyer.',
+      typicalDeal:'Synergy layer on top of an existing or concurrent SPM and Consolidations evaluation. Rarely the primary driver but frequently cited as a differentiator in competitive displacement of Oracle or SAP.',
+      competitiveAngle:'Oracle and SAP both have SPM and consolidation modules but they do not share a data model. The accrual feed is still a separate integration in both stacks.',
+      whenItShines:[
+        'Commission accruals require a monthly extract from the ICM tool and manual entry into the consolidation system',
+        'The close team has to wait for a RevOps extract to get entity-level quota attainment data',
+        'Sales compensation is a top-5 line item in the consolidated P&L and has historically had accrual adjustments',
+        'The company operates across multiple legal entities with entity-specific sales teams and quotas'
+      ]
+    },
+    narrative:'Sales compensation expense is one of the largest and most volatile line items in a multi-entity consolidation. When SPM and Consolidations share a platform, commission accruals flow directly into the consolidated P&L without manual re-entry, and entity-level quota attainment is visible in the statutory reporting model in real time. The close team stops waiting for a RevOps extract that was always 2 to 3 days late.',
+    drivers:[
+      {num:'S1',name:'Commission Accrual Consolidation',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'GTM headcount × $150K OTE × 40% comp ratio × 0.5% accrual error rate × 85% risk adj × 50% Y1 ramp',
+       detail:'Manual ICM-to-consolidation feeds introduce accrual errors averaging 0.5% of the total commission budget per period. A shared platform eliminates the extract-and-load cycle entirely.',
+       source:'Deloitte CFO Insights; Gartner'},
+      {num:'S2',name:'Segment Revenue Reporting Accuracy',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Close FTEs × 4 hrs/period × 12 periods × $62.50/hr × 85% risk adj × 50% Y1 ramp',
+       detail:'Quota attainment by legal entity is not available to the close team without a manual extract from the SPM system. A unified platform makes entity-level attainment available on day one of the close.',
+       source:'PwC Finance Effectiveness Benchmark 2023'},
+      {num:'S3',name:'Close Cycle Contribution',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Close FTEs × 2 days × 12 periods × $520/day × 85% risk adj × 50% Y1 ramp',
+       detail:'Sales-side data is typically available to the close team 2 to 3 days after period-end when housed in a separate SPM system. A unified platform makes it available on day one, compressing the overall close cycle.',
+       source:'APQC Close Benchmarking'}
+    ],
+    discovery:[
+      {q:'How does the commission accrual process work today — does it require a manual extract from your ICM tool into the consolidation system each period?',why:'Directly qualifies Driver S1. Manual extract confirms synergy value. Highest-value question for this pairing.',tag:'KEY INPUT'},
+      {q:'How many days after period-end does the close team receive entity-level quota attainment data from Revenue Operations?',why:'Sizes Drivers S2 and S3. Every day above zero is quantifiable value.',tag:'KEY INPUT'},
+      {q:'Has the sales compensation accrual line ever required a post-close adjustment or restatement?',why:'Establishes the risk narrative for CFO-level conversations. Even one restatement makes this a compliance conversation.'},
+      {q:'How many legal entities have their own sales teams and entity-specific quota structures?',why:'Scales all three drivers. More entities equals higher value on every driver in this pairing.'},
+      {q:'Who owns the integration between your ICM or SPM tool and your consolidation system today — RevOps, Finance, or IT?',why:'Reveals the organizational cost and fragility of the current integration. IT-owned integrations are usually the most expensive to maintain.'}
+    ]
+  },
+  'scm-consol': {
+    title:'SCM + Consolidations', accent:'#854f0b',
+    colorA:'#04342c', bgA:'#e1f5ee', labelA:'SCM',
+    colorB:'#26215c', bgB:'#eeedfe', labelB:'Consolidations',
+    magnitude:56, magLabel:'Moderate',
+    context:{
+      ideal:'Multi-entity manufacturer, distributor, or retailer where inventory valuation and intercompany transfer pricing are significant close activities. Most valuable when supply chain movements create reconciliation work for the close team each period.',
+      primaryBuyer:'Controller or CAO. VP Supply Chain is the operational champion. CFO is the economic buyer.',
+      typicalDeal:'Synergy layer on top of a Consolidations-led deal. Often surfaced when the close team mentions inventory valuation adjustments or intercompany elimination errors as a close pain point.',
+      competitiveAngle:'SAP Group Reporting and SCM share some data but require significant IT configuration to achieve this synergy. Pigment delivers it natively.',
+      whenItShines:[
+        'Inventory valuation requires a manual adjustment process at each period-end close',
+        'Intercompany supply chain movements create reconciliation work during consolidation',
+        'Logistics accruals are not available at period-end and delay the close',
+        'The company has multiple entities that transfer goods or services between them'
+      ]
+    },
+    narrative:'Inventory valuation, intercompany transfers, and logistics accruals are among the most error-prone line items in a multi-entity close. When Supply Chain and Consolidations share a platform, inventory positions and intercompany movements are available to the close team in real time, eliminating the reconciliation lag that drives close overruns and the manual matching work that consumes close FTE hours every single period.',
+    drivers:[
+      {num:'S1',name:'Inventory Valuation Accuracy',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Close FTEs × 4 hrs/period × 12 periods × $62.50/hr × 85% risk adj × 50% Y1 ramp',
+       detail:'Real-time inventory positions eliminate period-end valuation adjustments that typically consume 3 to 4 hours per close per entity. When inventory is valued in the same system used for consolidation, the adjustment step disappears.',
+       source:'APQC Close Benchmarking; Deloitte Finance Effectiveness'},
+      {num:'S2',name:'Intercompany Transfer Reconciliation',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Close FTEs × 6 hrs/period × 12 periods × $62.50/hr × 85% risk adj × 50% Y1 ramp',
+       detail:'SCM intercompany movements are automatically matched against elimination rules on a unified platform. Manual reconciliation of the same movements typically takes 5 to 8 hours per period per entity pair in disconnected systems.',
+       source:'EY CFO Insights; Deloitte Finance Effectiveness Benchmark'},
+      {num:'S3',name:'Logistics Accrual Close Contribution',badge:'ESTIMATED',badgeColor:'#1155cc',badgeBg:'#e8f0fb',
+       formula:'Close FTEs × 1 day saved × 12 periods × $520/day × 85% risk adj × 50% Y1 ramp',
+       detail:'Logistics accruals available at period-end without a separate SCM feed reduce the close cycle by 1 day per period. For high-entity-count organizations this compounds as the number of intercompany logistics flows increases.',
+       source:'APQC Logistics Benchmark'}
+    ],
+    discovery:[
+      {q:'How many hours does your close team spend on inventory valuation adjustments each period, and how many entities does that cover?',why:'Directly sizes Driver S1. Hours × entities × 12 periods is the gross benefit base.',tag:'KEY INPUT'},
+      {q:'How many intercompany supply chain movements require manual reconciliation during your consolidation process each period?',why:'Sizes Driver S2. The question also reveals whether the prospect is aware of this cost.',tag:'KEY INPUT'},
+      {q:'Are logistics accruals available on day one of the close, or does the close team wait on a feed from the supply chain system?',why:'Qualifies Driver S3. If there is a wait, the close cycle contribution is real and quantifiable.'},
+      {q:'How many legal entities are involved in intercompany transfers, and has that number grown through acquisition in the last 3 years?',why:'Scales all three drivers. More entity pairs equals higher value. Growth trajectory signals future value.'},
+      {q:'What is your current annual spend on the supply chain planning platform, and is it separate from your ERP or consolidation system?',why:'Surfaces the legacy tool elimination opportunity if SCM and Consolidations are on separate paid platforms.',tag:'KEY INPUT'}
+    ]
+  }
+};
+
+const MAG_COLORS = {
+  'fpa-spm':'#3b6d11','fpa-scm':'#0f6e56','fpa-consol':'#534ab7',
+  'spm-scm':'#993c1d','spm-consol':'#185fa5','scm-consol':'#854f0b'
+};
+const MAG_NAMES = {
+  'fpa-spm':'FP&A + SPM','fpa-scm':'FP&A + SCM','fpa-consol':'FP&A + Consol',
+  'spm-scm':'SPM + SCM','spm-consol':'SPM + Consol','scm-consol':'SCM + Consol'
+};
+
+function buildMagBars() {
+  const row = document.getElementById('magBarsRow');
+  const maxVal = Math.max(...Object.keys(DATA).map(k=>DATA[k].magnitude));
+  row.innerHTML = Object.keys(DATA).map(key => {
+    const d = DATA[key];
+    const pct = (d.magnitude / maxVal) * 100;
+    return `<div class="mag-bar-col" onclick="openPanel('${key}')" title="${d.title}: ${d.magLabel}">
+      <div class="mag-bar-track">
+        <div class="mag-bar-fill" style="height:${pct}%;background:${MAG_COLORS[key]}"></div>
+      </div>
+      <div class="mag-bar-name">${MAG_NAMES[key]}</div>
+      <div class="mag-bar-val" style="color:${MAG_COLORS[key]}">${d.magLabel}</div>
+    </div>`;
+  }).join('');
+}
+
+function updateCardMags() {
+  Object.keys(DATA).forEach(key => {
+    const el = document.getElementById('mag-'+key);
+    if (el) el.textContent = DATA[key].magLabel;
+  });
+}
+
+// Multi-select state
+const selected = new Set();
+
+function openPanel(key) {
+  if (selected.has(key)) {
+    selected.delete(key);
+    document.querySelector('.c-'+key).classList.remove('active');
+  } else {
+    selected.add(key);
+    document.querySelector('.c-'+key).classList.add('active');
+  }
+  renderAll();
+}
+
+function clearAll() {
+  selected.clear();
+  document.querySelectorAll('.pairing-card').forEach(c=>c.classList.remove('active'));
+  renderAll();
+}
+
+function switchTab(panelKey, tab) {
+  const container = document.getElementById('panel-'+panelKey);
+  container.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  container.querySelector('.tab[data-tab="'+tab+'"]').classList.add('active');
+  container.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  container.getElementById ? null : null;
+  document.getElementById('tp-'+panelKey+'-'+tab).classList.add('active');
+}
+
+function dismissOne(key) {
+  selected.delete(key);
+  document.querySelector('.c-'+key).classList.remove('active');
+  renderAll();
+}
+
+function renderAll() {
+  const wrap = document.getElementById('detailWrap');
+  const countEl = document.getElementById('selectionCount');
+  const clearBtn = document.getElementById('clearBtn');
+  const footnote = document.getElementById('footnote');
+
+  if (selected.size === 0) {
+    wrap.style.display = 'none';
+    footnote.style.display = 'none';
+    countEl.style.display = 'none';
+    clearBtn.style.display = 'none';
+    return;
+  }
+
+  // Update header controls
+  const n = selected.size;
+  countEl.textContent = n === 1 ? '1 pairing selected' : n + ' pairings selected';
+  countEl.style.display = 'inline';
+  clearBtn.style.display = 'inline';
+  wrap.style.display = 'block';
+  footnote.style.display = 'block';
+
+  // Multi-select summary bar when 2+ selected
+  const keys = Array.from(selected);
+  let summaryHtml = '';
+  if (keys.length > 1) {
+    const pills = keys.map(k => {
+      const p = DATA[k];
+      return `<span style="display:inline-flex;align-items:center;gap:5px;background:${p.bgA};color:${p.colorA};font-size:11px;font-weight:700;padding:4px 10px;border-radius:7px;border:1px solid ${p.accent}20">
+        <span>${p.labelA}</span><span style="color:var(--label);font-weight:300">+</span><span style="color:${p.colorB}">${p.labelB}</span>
+      </span>`;
+    }).join('<span style="color:var(--label);font-size:13px;padding:0 4px">·</span>');
+
+    const totalDrivers = keys.reduce((a,k)=>a+DATA[k].drivers.length,0);
+    const totalDiscovery = keys.reduce((a,k)=>a+DATA[k].discovery.length,0);
+    const keyInputs = keys.reduce((a,k)=>a+DATA[k].discovery.filter(d=>d.tag==='KEY INPUT').length,0);
+
+    summaryHtml = `
+    <div style="background:var(--cream-kpi);border:1px solid var(--border);border-radius:12px;padding:14px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Active selection</div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">${pills}</div>
+      </div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <div style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--green)">${totalDrivers}</div><div style="font-size:10px;color:var(--label)">Total drivers</div></div>
+        <div style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--green)">${totalDiscovery}</div><div style="font-size:10px;color:var(--label)">Discovery Qs</div></div>
+        <div style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--amber)">${keyInputs}</div><div style="font-size:10px;color:var(--label)">Key inputs</div></div>
+      </div>
+    </div>`;
+  }
+
+  // Render one panel per selected pairing
+  const panelsHtml = keys.map(key => buildPanelHtml(key)).join('');
+  wrap.innerHTML = summaryHtml + panelsHtml;
+
+  // Scroll to detail area on first selection
+  if (keys.length === 1) {
+    setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'nearest'}),60);
+  }
+}
+
+function buildPanelHtml(key) {
+  const p = DATA[key];
+  const ctx = p.context;
+
+  const badgeA = `<span class="detail-badge" style="color:${p.colorA};background:${p.bgA}">${p.labelA}</span>`;
+  const badgeB = `<span class="detail-badge" style="color:${p.colorB};background:${p.bgB}">${p.labelB}</span>`;
+
+  const driverTiles = p.drivers.map(d=>`
+    <div class="driver-tile">
+      <div class="driver-num">Driver ${d.num}</div>
+      <div class="driver-name">${d.name}</div>
+      <div class="badge-row"><span class="driver-badge" style="background:${d.badgeBg};color:${d.badgeColor}">${d.badge}</span></div>
+      <div class="driver-formula">${d.formula}</div>
+      <div class="driver-detail">${d.detail}</div>
+      <div class="driver-source"><strong>Sources:</strong> ${d.source}</div>
+    </div>`).join('');
+
+  const extraNote = p.extraNote
+    ? `<div class="narrative-note"><strong>Additional narrative driver:</strong> ${p.extraNote}</div>`
+    : '';
+
+  const discItems = p.discovery.map((d,i)=>`
+    <div class="disc-item">
+      <div class="disc-num">${i+1}</div>
+      <div>
+        <div class="disc-q">${d.q}${d.tag?`<span class="disc-input-tag">${d.tag}</span>`:''}</div>
+        <div class="disc-why">${d.why}</div>
+      </div>
+    </div>`).join('');
+
+  const whenItems = ctx.whenItShines.map(w=>`<li>${w}</li>`).join('');
+  const pid = key; // panel id prefix
+
+  return `
+  <div class="detail-panel" id="panel-${pid}" style="margin-bottom:12px">
+    <div class="detail-header" style="border-left:4px solid ${p.accent}">
+      <div class="detail-header-left">
+        <div class="detail-pairing-badges">${badgeA}<span class="detail-plus">+</span>${badgeB}</div>
+        <div class="detail-title">${p.title} — Platform Synergy</div>
+        <div class="detail-narrative">${p.narrative}</div>
+      </div>
+      <button class="detail-close" onclick="dismissOne('${pid}')" title="Remove this pairing">&#x2715;</button>
+    </div>
+    <div class="context-bar">
+      <div class="ctx-item"><div class="ctx-key">Magnitude</div><div class="ctx-val" style="color:${p.accent};font-weight:700">${p.magLabel}</div></div>
+      <div class="ctx-item"><div class="ctx-key">Primary Buyer</div><div class="ctx-val">${ctx.primaryBuyer}</div></div>
+      <div class="ctx-item"><div class="ctx-key">Ideal Profile</div><div class="ctx-val">${ctx.ideal.split('.')[0]}.</div></div>
+      <div class="ctx-item"><div class="ctx-key">Competitive Angle</div><div class="ctx-val">${ctx.competitiveAngle.split('.')[0]}.</div></div>
+    </div>
+    <div class="tab-nav">
+      <div class="tab active" data-tab="drivers" onclick="switchTab('${pid}','drivers')">⚡ Synergy Drivers</div>
+      <div class="tab" data-tab="discovery" onclick="switchTab('${pid}','discovery')">🔍 Discovery Questions</div>
+      <div class="tab" data-tab="context" onclick="switchTab('${pid}','context')">📋 Deal Context</div>
+    </div>
+    <div id="tp-${pid}-drivers" class="tab-panel active">
+      <div class="drivers-grid">${driverTiles}</div>
+      ${extraNote}
+    </div>
+    <div id="tp-${pid}-discovery" class="tab-panel">
+      <div class="discovery-wrap">
+        <div class="disc-intro">These questions validate the ESTIMATED inputs used in the synergy model. Questions tagged KEY INPUT have the highest impact on the quantified benefit — prioritize them in discovery conversations.</div>
+        ${discItems}
+      </div>
+    </div>
+    <div id="tp-${pid}-context" class="tab-panel">
+      <div class="context-wrap">
+        <div class="ctx-block highlight">
+          <div class="ctx-block-title">Ideal Prospect Profile</div>
+          <p>${ctx.ideal}</p>
+        </div>
+        <div class="ctx-block highlight">
+          <div class="ctx-block-title">When This Synergy Shines</div>
+          <ul>${whenItems}</ul>
+        </div>
+        <div class="ctx-block">
+          <div class="ctx-block-title">Primary Buyer</div>
+          <p>${ctx.primaryBuyer}</p>
+        </div>
+        <div class="ctx-block">
+          <div class="ctx-block-title">Typical Deal Context</div>
+          <p>${ctx.typicalDeal}</p>
+        </div>
+        <div class="ctx-block" style="grid-column:1/-1">
+          <div class="ctx-block-title">Competitive Displacement Angle</div>
+          <p>${ctx.competitiveAngle}</p>
+        </div>
+      </div>
+    </div>
+    <div class="cta-strip">
+      <div class="cta-strip-text"><strong>Ready to model dollar values?</strong> Enter a company name in Claude to research public filings and calculate quantified benefits for each driver against actual prospect financials.</div>
+      <button class="cta-btn" onclick="alert('Enter a company name in the Claude chat to get started.')">Explore with Claude ↗</button>
+    </div>
+  </div>`;
+}
+
+buildMagBars();
+updateCardMags();
+</script>
+</body>
+</html>
